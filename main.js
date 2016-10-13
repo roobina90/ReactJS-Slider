@@ -1,23 +1,3 @@
-
-//model -->
-// const Http = {
-//     get: (url) => new Task((rej, res) => $.getJSON(url).fail(rej).done(res))
-// };
-
-
-// const Url = String;
-
-// const makeUrl = function(t) {
-//     return baseUrl + t;
-// };
-
-// const baseUrl = "https://api.github.com/users/";
-
-// const extractImage = R.prop("avatar_url");
-// const githubSearch = R.compose(R.map(extractImage), Http.get, makeUrl);
-//<-- model
-
-
 const Slide = React.createClass({
     displayName: "Slide",
 
@@ -38,13 +18,6 @@ const Slider = React.createClass({
     componentDidMount() {
         this.setState({slidesCount: this.props.sources.length});
     },
-    // termChanged({currentTarget: t}) {
-    //     this.setState({ term: t.value });
-    // },
-    // updateResult(x) {
-    //     this.setState({result: x});
-    // },
-
     nextClicked(_) {
         var newCurrentSlide = (this.state.currentSlide + 1) % this.state.slidesCount;
         this.setState({ currentSlide: newCurrentSlide});
