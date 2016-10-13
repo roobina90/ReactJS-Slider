@@ -1,44 +1,73 @@
 
+//model -->
+// const Http = {
+//     get: (url) => new Task((rej, res) => $.getJSON(url).fail(rej).done(res))
+// };
 
-const Http = {
-    get: (url) => new Task((rej, res) => $.getJSON(url).fail(rej).done(res))
-};
+
+// const Url = String;
+
+// const makeUrl = function(t) {
+//     return baseUrl + t;
+// };
+
+// const baseUrl = "https://api.github.com/users/";
+
+// const extractImage = R.prop("avatar_url");
+// const githubSearch = R.compose(R.map(extractImage), Http.get, makeUrl);
+//<-- model
 
 
-const Url = String;
+const Slide = React.createClass({
+    displayName: "Slide",
 
-const makeUrl = function(t) {
-    return baseUrl + t;
-};
+    getInitialState() { return {} },
 
-const baseUrl = "https://api.github.com/users/";
+    render() {
+        return (
+            <img src={this.props.source} width="200" className = {this.props.className}/>
+        );
+    }
 
-const extractImage = R.prop("avatar_url");
-const githubSearch = R.compose(R.map(extractImage), Http.get, makeUrl);
+});
 
-var GitHub = React.createClass({
-    displayName: "GitHub",
-    getInitialState() { return { term: "", result: "" } },
-
-    termChanged({currentTarget: t}) {
-        this.setState({ term: t.value });
+const Slider = React.createClass({
+    displayName: "Slider",
+    currentSlide: 0,
+    getInitialState() { return { currentSlide: 0, slidesCount: 0 } },
+    componentDidMount() {
+        this.setState({slidesCount: this.props.sources.length});
     },
-    updateResult(x) {
-        this.setState({result: x});
+    // termChanged({currentTarget: t}) {
+    //     this.setState({ term: t.value });
+    // },
+    // updateResult(x) {
+    //     this.setState({result: x});
+    // },
+
+    nextClicked(_) {
+        var newCurrentSlide = (this.state.currentSlide + 1) % this.state.slidesCount;
+        this.setState({ currentSlide: newCurrentSlide});
     },
 
-    searchClicked(_) {
-        githubSearch(this.state.term).fork(this.props.shorError, this.updateResult);
+    prevClicked(_) {
+        var newCurrentSlide =(this.state.slidesCount + this.state.currentSlide - 1) % this.state.slidesCount;
+        this.setState({ currentSlide: newCurrentSlide});
     },
 
 
     render() {
-        const profileImage =  <img src={this.state.result}/>;
+        const currentSlide = this.state.currentSlide;
+        const slides = this.props.sources.map(function (imgPath, index) {
+            console.log(this);
+            let className = "active-" + (currentSlide === index);
+            return <Slide source={imgPath} className={className}/>;
+        });
         return (
-            <div id="gitHub">
-                <input onChange={this.termChanged}/>
-                <button onClick={this.searchClicked}>Search</button>
-                <div id="results">{profileImage}</div>
+            <div id="slider">
+                <button onClick={this.prevClicked}>Prev</button>
+                <button onClick={this.nextClicked}>Next</button>
+                <div id="slides">{slides}</div>
             </div>
         );
     }
@@ -47,14 +76,11 @@ var GitHub = React.createClass({
 
 const App = React.createClass({
     displayName: "App",
-    getInitialState() { return { error: "" }; },
-    showErrors(s) { this.setState({ error: s }); },
-
     render() {
+        const images = ["images/p1.jpg", "images/p2.jpg", "images/p3.jpg"];
         return (
             <div id="app">
-                { this.state.error ? <p> {this.state.error}</p> : null}
-                <GitHub />
+                <Slider sources={images}/>
             </div>
 
         );
