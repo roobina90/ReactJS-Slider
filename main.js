@@ -1,16 +1,53 @@
+
+//impure as hell
+var BaseComponent = {
+    //helpers
+    _loopOverProperties(object, callback) {
+        Object.keys(object).map(callback);
+    },
+    _copyMutualProperties(object1, object2, key) {
+        if (object1.hasOwnProperty(key)) {
+            if (object2.hasOwnProperty(key)) {
+                object2[key] = object1[key];
+            } else {
+                throw `Undeclared property passed: ${key}`;
+            }
+        }
+    },
+
+    //public
+    componentWillReceiveProps(nextProps) {
+        this._loopOverProperties(nextProps, (key) =>  this._copyMutualProperties(nextProps, this._props, key));
+    },
+
+    componentWillMount() {
+        this._loopOverProperties(this.props, (key) =>  this._copyMutualProperties(this.props, this._props, key));
+    },
+    setStateWH(obj) {
+        this.setState(obj);
+        this._state = Object.assign({}, this._state, obj);
+
+    }
+};
+
 const Slide = React.createClass({
+    mixins: [BaseComponent],
+    _props: { source: "", className: "" },
     render() {
         return (
-            <img src={this.props.source} width="200" className={this.props.className} />
+            <img src={this._props.source} width="200" className={this._props.className}/>
         );
     }
 
 });
 
+
 const Controls = React.createClass({
+    _props: { currentSlide: 0, slidesCount: 0 },
+    mixins: [BaseComponent],
     render() {
-        const currentSlide = this.props.currentSlide,
-        dotsArray = Array.apply(null, {length: this.props.slidesCount});
+        const currentSlide = this._props.currentSlide,
+            dotsArray = Array.apply(null, { length: this._props.slidesCount });
 
 
         const dots = dotsArray.map(function (_, index) {
@@ -26,30 +63,25 @@ const Controls = React.createClass({
 
 
 const Slider = React.createClass({
-    _state: { currentSlide: 0, slidesCount: 0 },
-
+    mixins: [BaseComponent],
+    _state: { currentSlide: 0 },
+    _props: { sources: [] },
     getInitialState() { return this._state },
 
     nextClicked(_) {
-        var newCurrentSlide = (this.state.currentSlide + 1) % this.state.slidesCount;
-        this.setState({ currentSlide: newCurrentSlide });
+        var newCurrentSlide = (this._state.currentSlide + 1) % this._props.sources.length;
+        this.setStateWH({ currentSlide: newCurrentSlide });
     },
     prevClicked(_) {
-        var newCurrentSlide = (this.state.slidesCount + this.state.currentSlide - 1) % this.state.slidesCount;
-        this.setState({ currentSlide: newCurrentSlide });
+        var newCurrentSlide = (this._props.sources.length + this._state.currentSlide - 1) % this._props.sources.length;
+        this.setStateWH({ currentSlide: newCurrentSlide });
     },
-
-    componentDidMount() {
-        this.setState({ slidesCount: this.props.sources.length });
-    },
-
-
     render() {
-        const currentSlide = this.state.currentSlide,
-            slidesCount = this.state.slidesCount;
-        const slides = this.props.sources.map(function (imgPath, index) {
+        const currentSlide = this._state.currentSlide,
+            slidesCount = this._props.sources.length;
+        const slides = this._props.sources.map(function (imgPath, index) {
             let className = "active-" + (currentSlide === index);
-            return <Slide source={imgPath} className={className} />;
+            return <Slide source={imgPath} className={className}/>;
         });
 
         return (
